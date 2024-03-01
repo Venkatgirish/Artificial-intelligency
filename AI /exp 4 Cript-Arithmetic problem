@@ -1,0 +1,38 @@
+from itertools import permutations
+
+def is_solution(letters, equation):
+    """
+    Checks if a permutation of digits satisfies the cryptarithmetic equation.
+    """
+    translated = equation.translate(str.maketrans(letters))
+    return eval(translated)
+
+
+def solve_cryptarithmetic(equation):
+    """
+    Solves the cryptarithmetic puzzle by generating all possible permutations
+    of digits and checking if any permutation satisfies the equation.
+    """
+    # Extract unique letters from the equation
+    letters = ''.join(set(char for char in equation if char.isalpha()))
+
+    # Generate all possible permutations of digits from 0 to 9
+    for perm in permutations('0123456789', len(letters)):
+        if '0' not in perm[:len(letters)]:
+            digit_mapping = dict(zip(letters, perm))
+            if is_solution(digit_mapping, equation):
+                return digit_mapping
+
+    return None
+
+
+if __name__ == "__main__":
+    equation = "SEND + MORE == MONEY"
+    solution = solve_cryptarithmetic(equation)
+    
+    if solution:
+        print("Solution found:")
+        for letter, digit in solution.items():
+            print(f"{letter} = {digit}")
+    else:
+        print("No solution found.")
