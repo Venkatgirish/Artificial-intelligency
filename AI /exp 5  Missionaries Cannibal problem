@@ -1,0 +1,120 @@
+class State:
+    def __init__(self, left_missionaries, left_cannibals, boat, right_missionaries, right_cannibals):
+        self.left_missionaries = left_missionaries
+        self.left_cannibals = left_cannibals
+        self.boat = boat
+        self.right_missionaries = right_missionaries
+        self.right_cannibals = right_cannibals
+
+    def __eq__(self, other):
+        return self.left_missionaries == other.left_missionaries and \
+               self.left_cannibals == other.left_cannibals and \
+               self.boat == other.boat and \
+               self.right_missionaries == other.right_missionaries and \
+               self.right_cannibals == other.right_cannibals
+
+    def __hash__(self):
+        return hash((self.left_missionaries, self.left_cannibals, self.boat, self.right_missionaries, self.right_cannibals))
+
+    def __str__(self):
+        return f"Left: {self.left_missionaries}M {self.left_cannibals}C, Boat: {self.boat}, Right: {self.right_missionaries}M {self.right_cannibals}C"
+
+def is_valid(state):
+    if state.left_missionaries < 0 or state.left_cannibals < 0 or state.right_missionaries < 0 or state.right_cannibals < 0:
+        return False
+    if state.left_missionaries > 3 or state.left_cannibals > 3 or state.right_missionaries > 3 or state.right_cannibals > 3:
+        return False
+    if state.left_missionaries < state.left_cannibals and state.left_missionaries > 0:
+        return False
+    if state.right_missionaries < state.right_cannibals and state.right_missionaries > 0:
+        return False
+    return True
+
+def get_successors(state):
+    successors = []
+
+    if state.boat == 'left':
+        # Moving two missionaries
+        if state.left_missionaries >= 2:
+            successor = State(state.left_missionaries - 2, state.left_cannibals, 'right', state.right_missionaries + 2, state.right_cannibals)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving two cannibals
+        if state.left_cannibals >= 2:
+            successor = State(state.left_missionaries, state.left_cannibals - 2, 'right', state.right_missionaries, state.right_cannibals + 2)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving one missionary and one cannibal
+        if state.left_missionaries >= 1 and state.left_cannibals >= 1:
+            successor = State(state.left_missionaries - 1, state.left_cannibals - 1, 'right', state.right_missionaries + 1, state.right_cannibals + 1)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving one missionary
+        if state.left_missionaries >= 1:
+            successor = State(state.left_missionaries - 1, state.left_cannibals, 'right', state.right_missionaries + 1, state.right_cannibals)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving one cannibal
+        if state.left_cannibals >= 1:
+            successor = State(state.left_missionaries, state.left_cannibals - 1, 'right', state.right_missionaries, state.right_cannibals + 1)
+            if is_valid(successor):
+                successors.append(successor)
+    else:
+        # Moving two missionaries
+        if state.right_missionaries >= 2:
+            successor = State(state.left_missionaries + 2, state.left_cannibals, 'left', state.right_missionaries - 2, state.right_cannibals)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving two cannibals
+        if state.right_cannibals >= 2:
+            successor = State(state.left_missionaries, state.left_cannibals + 2, 'left', state.right_missionaries, state.right_cannibals - 2)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving one missionary and one cannibal
+        if state.right_missionaries >= 1 and state.right_cannibals >= 1:
+            successor = State(state.left_missionaries + 1, state.left_cannibals + 1, 'left', state.right_missionaries - 1, state.right_cannibals - 1)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving one missionary
+        if state.right_missionaries >= 1:
+            successor = State(state.left_missionaries + 1, state.left_cannibals, 'left', state.right_missionaries - 1, state.right_cannibals)
+            if is_valid(successor):
+                successors.append(successor)
+        # Moving one cannibal
+        if state.right_cannibals >= 1:
+            successor = State(state.left_missionaries, state.left_cannibals + 1, 'left', state.right_missionaries, state.right_cannibals - 1)
+            if is_valid(successor):
+                successors.append(successor)
+
+    return successors
+
+def dfs(start_state, goal_state):
+    visited = set()
+    stack = [(start_state, [])]
+
+    while stack:
+        state, path = stack.pop()
+
+        if state == goal_state:
+            return path + [state]
+
+        visited.add(state)
+        successors = get_successors(state)
+        for successor in successors:
+            if successor not in visited:
+                stack.append((successor, path + [state]))
+
+    return None
+
+if __name__ == "__main__":
+    start_state = State(3, 3, 'left', 0, 0)
+    goal_state = State(0, 0, 'right', 3, 3)
+
+    solution = dfs(start_state, goal_state)
+
+    if solution:
+        print("Solution found:")
+        for i, state in enumerate(solution):
+            print(f"Step {i + 1}: {state}")
+    else:
+        print("No solution found.")
