@@ -1,0 +1,36 @@
+import sys
+
+def tsp(graph, start):
+    n = len(graph)
+    all_vertices = set(range(n))
+    memo = {}
+
+    def tsp_helper(curr, visited):
+        if len(visited) == n:
+            return graph[curr][start]
+        
+        visited_tuple = tuple(sorted(visited))
+        if (curr, visited_tuple) in memo:
+            return memo[(curr, visited_tuple)]
+
+        min_cost = sys.maxsize
+        for next_city in all_vertices - visited:
+            cost = graph[curr][next_city] + tsp_helper(next_city, visited | {next_city})
+            min_cost = min(min_cost, cost)
+
+        memo[(curr, visited_tuple)] = min_cost
+        return min_cost
+
+    return tsp_helper(start, {start})
+
+# Example usage:
+graph = [
+    [0, 10, 15, 20],
+    [10, 0, 35, 25],
+    [15, 35, 0, 30],
+    [20, 25, 30, 0]
+]
+
+start_city = 0
+min_cost = tsp(graph, start_city)
+print("Minimum cost for TSP starting from city", start_city, ":", min_cost)
